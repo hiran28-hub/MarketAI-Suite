@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketAI Suite - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>MarketAI Suite</h1>
+            <p>AI-Powered Sales & Marketing Platform</p>
+        </header>
+
+        <main class="dashboard-grid">
+            <a href="/campaign" class="card">
+                <div class="card-icon">🚀</div>
+                <h2>Campaign Generator</h2>
+                <p>Create data-driven marketing strategies and content.</p>
+            </a>
+
+            <a href="/pitch" class="card">
+                <div class="card-icon">💼</div>
+                <h2>Sales Pitch Generator</h2>
+                <p>Craft personalized B2B sales pitches for any persona.</p>
+            </a>
+
+            <a href="/lead" class="card">
+                <div class="card-icon">🎯</div>
+                <h2>Lead Scoring</h2>
+                <p>Analyze and score leads to prioritize outreach.</p>
+            </a>
+        </main>
+
+        <div class="recent-activity">
+            <h3>Recent Activity</h3>
+            <p class="placeholder-text">No recent activity yet. Start by using a tool above.</p>
+        </div>
+    </div>
+</body>
+
+</html>

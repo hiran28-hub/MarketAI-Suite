@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Pitch Generator - MarketAI Suite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Back to Dashboard</a>
+            <h1>Sales Pitch Generator</h1>
+            <p>Create persuasive pitches tailored to your prospect.</p>
+        </header>
+
+        <div class="content-grid">
+            <section class="input-section">
+                <form method="POST" action="/pitch">
+                    <div class="form-group">
+                        <label for="product">Product/Solution</label>
+                        <input type="text" id="product" name="product" required
+                            placeholder="e.g., Enterprise Cloud Storage">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="persona">Customer Persona</label>
+                        <textarea id="persona" name="persona" required
+                            placeholder="e.g., CTO of a Fortune 500 company concerned with security..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="industry">Industry</label>
+                        <select id="industry" name="industry">
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Manufacturing">Manufacturing</option>
+                            <option value="Education">Education</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Company Size</label>
+                        <div style="display: flex; gap: 15px; margin-top: 5px;">
+                            <label style="font-weight: normal;"><input type="radio" name="size" value="Startup (1-50)"
+                                    checked> Startup</label>
+                            <label style="font-weight: normal;"><input type="radio" name="size"
+                                    value="Mid-Market (51-200)"> Mid-Market</label>
+                            <label style="font-weight: normal;"><input type="radio" name="size"
+                                    value="Enterprise (200+)"> Enterprise</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budget">Budget Range</label>
+                        <select id="budget" name="budget">
+                            <option value="Under ₹10k">Under ₹10k</option>
+                            <option value="₹10k - ₹50k">₹10k - ₹50k</option>
+                            <option value="₹50k - ₹100k">₹50k - ₹100k</option>
+                            <option value="₹100k+">₹100k+</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Generate Pitch</button>
+                </form>
+            </section>
+
+            {% if output %}
+            <section class="output-section">
+                <h2>Generated Sales Pitch</h2>
+                <div class="output-content">
+                    <pre>{{ output }}</pre>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
