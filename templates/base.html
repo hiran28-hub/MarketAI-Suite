@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MarketAI Suite{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">✨</span> MarketAI Suite
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-item">Home</a>
+                <a href="/campaign" class="nav-item">Campaigns</a>
+                <a href="/pitch" class="nav-item">Pitches</a>
+                <a href="/lead" class="nav-item">Leads</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <header>
+            {% block header %}{% endblock %}
+        </header>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 49, 83, 0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+        <div class="spinner"
+            style="width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #6366f1; animation: spin 1s ease-in-out infinite;">
+        </div>
+        <p style="color: white; margin-top: 20px; font-weight: 500;">Processing...</p>
+    </div>
+
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form');
+            const links = document.querySelectorAll('a.card');
+            const loader = document.getElementById('loading-overlay');
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function () {
+                    loader.style.display = 'flex';
+                });
+            });
+
+            links.forEach(link => {
+                link.addEventListener('click', function () {
+                    loader.style.display = 'flex';
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,46 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarketAI Suite - Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
+{% block header %}
+<div class="dashboard-header" style="padding-top: 40px;">
+    <h1 style="margin: 0;">MarketAI Suite</h1>
+    <p style="opacity: 0.8; font-size: 1.1rem; font-weight: 300; margin-top: 10px;">Your AI-powered marketing and sales
+        co-pilot.</p>
+</div>
+{% endblock %}
 
-<body>
-    <div class="container">
-        <header>
-            <h1>MarketAI Suite</h1>
-            <p>AI-Powered Sales & Marketing Platform</p>
-        </header>
-
-        <main class="dashboard-grid">
-            <a href="/campaign" class="card">
-                <div class="card-icon">🚀</div>
-                <h2>Campaign Generator</h2>
-                <p>Create data-driven marketing strategies and content.</p>
-            </a>
-
-            <a href="/pitch" class="card">
-                <div class="card-icon">💼</div>
-                <h2>Sales Pitch Generator</h2>
-                <p>Craft personalized B2B sales pitches for any persona.</p>
-            </a>
-
-            <a href="/lead" class="card">
-                <div class="card-icon">🎯</div>
-                <h2>Lead Scoring</h2>
-                <p>Analyze and score leads to prioritize outreach.</p>
-            </a>
-        </main>
-
-        <div class="recent-activity">
-            <h3>Recent Activity</h3>
-            <p class="placeholder-text">No recent activity yet. Start by using a tool above.</p>
+{% block content %}
+<main class="dashboard-grid">
+    <a href="/campaign" class="card dashboard-card">
+        <div class="card-icon">🚀</div>
+        <div class="card-body">
+            <h2>Campaign Generator</h2>
+            <p>Scale your marketing with AI-driven content and strategy.</p>
+            <span class="card-link">Launch Tool →</span>
         </div>
-    </div>
-</body>
+    </a>
 
-</html>
+    <a href="/pitch" class="card dashboard-card">
+        <div class="card-icon">💼</div>
+        <div class="card-body">
+            <h2>Sales Pitch Generator</h2>
+            <p>Close more deals with hyper-personalized B2B sales pitches.</p>
+            <span class="card-link">Launch Tool →</span>
+        </div>
+    </a>
+
+    <a href="/lead" class="card dashboard-card">
+        <div class="card-icon">🎯</div>
+        <div class="card-body">
+            <h2>Lead Scoring</h2>
+            <p>Data-backed lead qualification and urgency analysis.</p>
+            <span class="card-link">Launch Tool →</span>
+        </div>
+    </a>
+</main>
+
+<div class="activity-section" style="margin-top: 60px;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Recent Activity</h3>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">System: <span
+                style="color: #16a34a; font-weight: 600;">Operational</span></span>
+    </div>
+
+    <div class="activity-card"
+        style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; max-width: 1000px; margin-left: auto; margin-right: auto; box-shadow: var(--shadow-sm);">
+        {% if session.activities %}
+        {% for activity in session.activities %}
+        <div class="activity-item"
+            style="display: flex; gap: 20px; align-items: center; padding-bottom: 20px; border-bottom: {% if not loop.last %}1px solid var(--border-color){% else %}none{% endif %}; margin-bottom: {% if not loop.last %}20px{% else %}0{% endif %};">
+            <div
+                style="background: rgba(138, 97, 92, 0.1); color: var(--primary-color); min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
+                {{ activity.icon }}</div>
+            <div style="flex-grow: 1;">
+                <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 600;">{{ activity.title
+                    }}</h4>
+                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">{{ activity.description
+                    }}</p>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">{{ activity.time }}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="activity-item" style="display: flex; gap: 20px; align-items: center;">
+            <div
+                style="background: rgba(99, 102, 241, 0.15); color: #818cf8; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
+                ✨</div>
+            <div style="flex-grow: 1;">
+                <h4 style="margin: 0; font-size: 1rem; color: white; font-weight: 500;">Ready for Exploration</h4>
+                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #94a3b8;">No activity yet. Start by using one of
+                    the tools above.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<section class="platforms-section">
+    <h2>Supported Platforms</h2>
+    <div class="platforms-grid">
+        <!-- Row 1 (4 items) -->
+        <a href="#" class="platform-card">
+            <i class="fab fa-linkedin"></i>
+            <span>LinkedIn</span>
+        </a>
+        <a href="#" class="platform-card">
+            <i class="fab fa-facebook"></i>
+            <span>Facebook</span>
+        </a>
+        <a href="#" class="platform-card">
+            <i class="fab fa-instagram"></i>
+            <span>Instagram</span>
+        </a>
+        <a href="#" class="platform-card">
+            <i class="fab fa-twitter"></i>
+            <span>Twitter/X</span>
+        </a>
+
+        <!-- Row 2 (3 items) -->
+        <a href="#" class="platform-card row-2">
+            <i class="fab fa-youtube"></i>
+            <span>YouTube</span>
+        </a>
+        <a href="#" class="platform-card row-2">
+            <i class="fas fa-envelope"></i>
+            <span>Email</span>
+        </a>
+        <a href="#" class="platform-card row-2">
+            <i class="fab fa-whatsapp"></i>
+            <span>WhatsApp</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

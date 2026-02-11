@@ -1,109 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lead Scoring - MarketAI Suite</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
+{% block title %}Lead Scoring - MarketAI Suite{% endblock %}
 
-<body>
-    <div class="container">
-        <header>
-            <a href="/" class="back-link">← Back to Dashboard</a>
-            <h1>Lead Scoring</h1>
-            <p>Quantify lead quality and prioritize outreach.</p>
-        </header>
+{% block header %}
 
-        <div class="content-grid">
-            <section class="input-section">
-                <form method="POST" action="/lead">
-                    <div class="form-group">
-                        <label for="budget">Budget</label>
-                        <input type="text" id="budget" name="budget" required placeholder="e.g., $50k annual budget">
-                    </div>
+<h1>Lead Scoring</h1>
+<p>Quantify lead quality and prioritize outreach.</p>
+{% endblock %}
 
-                    <div class="form-group">
-                        <label for="need">Business Need</label>
-                        <textarea id="need" name="need" required
-                            placeholder="e.g., Needs to automate manual reporting..."></textarea>
-                    </div>
+{% block content %}
+<div class="content-grid">
+    <section class="input-section">
+        <form method="POST" action="/lead">
+            <div class="form-group">
+                <label for="name">Lead Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Sarah Johnson">
+            </div>
 
-                    <div class="form-group">
-                        <label for="urgency">Urgency</label>
-                        <select id="urgency" name="urgency">
-                            <option value="High">High (Immediate)</option>
-                            <option value="Medium">Medium (This Quarter)</option>
-                            <option value="Low">Low (Next Year)</option>
-                        </select>
-                    </div>
+            <div class="form-group">
+                <label for="budget">Budget Information</label>
+                <textarea id="budget" name="budget" required
+                    placeholder="e.g., $50k annual budget, approved by board..."></textarea>
+            </div>
 
-                    <div class="form-group">
-                        <label for="authority">Authority (Optional)</label>
-                        <input type="text" id="authority" name="authority" placeholder="e.g., Key Decision Maker">
-                    </div>
+            <div class="form-group">
+                <label for="need">Business Need Description</label>
+                <textarea id="need" name="need" required
+                    placeholder="e.g., Needs to automate manual reporting..."></textarea>
+            </div>
 
-                    <button type="submit" class="btn-primary">Score Lead</button>
-                </form>
-            </section>
+            <div class="form-group">
+                <label for="urgency">Urgency Level</label>
+                <select id="urgency" name="urgency">
+                    <option value="High">High (Immediate)</option>
+                    <option value="Medium">Medium (This Quarter)</option>
+                    <option value="Low">Low (Next Year)</option>
+                </select>
+            </div>
 
-            {% if output %}
-            <section class="output-section">
-                <h2>Lead Analysis</h2>
+            <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" name="notes"
+                    placeholder="e.g., Competitor contract expires in 3 months..."></textarea>
+            </div>
 
-                {% if score %}
-                <div class="score-container" style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <button type="submit" class="btn-primary">Score Lead</button>
+        </form>
+    </section>
+
+    {% if output %}
+    <section class="output-section">
+        <h2>Lead Analysis</h2>
+
+        {% if score %}
+        <div class="score-container" style="display: flex; gap: 20px; margin-bottom: 25px;">
+            <div
+                style="flex: 1; padding: 20px; background: #fffcfb; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <strong style="color: var(--text-primary);">Lead Score: {{ score }}/100</strong>
+                    {% set score_color = '#b45309' if score|int >= 75 else '#8a615c' if score|int >= 50 else '#991b1b'
+                    %}
+                    {% set score_label = 'Hot Lead 🔥' if score|int >= 75 else 'Warm Lead ⚠️' if score|int >= 50 else
+                    'Cold Lead ❄️' %}
+                    <span style="font-weight: 700; color: {{ score_color }};">
+                        {{ score_label }}
+                    </span>
+                </div>
+                <div style="background: var(--border-color); border-radius: 99px; height: 8px; width: 100%;">
                     <div
-                        style="flex: 1; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <strong>Lead Score: {{ score }}/100</strong>
-                            <span
-                                style="font-weight: bold; color: {% if score|int >= 75 %}#16a34a{% elif score|int >= 50 %}#ca8a04{% else %}#dc2626{% endif %};">
-                                {% if score|int >= 75 %}Hot Lead 🔥{% elif score|int >= 50 %}Warm Lead ⚠️{% else %}Cold
-                                Lead ❄️{% endif %}
-                            </span>
-                        </div>
-                        <div style="background: #e2e8f0; border-radius: 99px; height: 10px; width: 100%;">
-                            <div
-                                style="background: {% if score|int >= 75 %}#16a34a{% elif score|int >= 50 %}#ca8a04{% else %}#dc2626{% endif %}; height: 100%; border-radius: 99px; width: {{ score }}%;">
-                            </div>
-                        </div>
+                        style="background: var(--primary-color); height: 100%; border-radius: 99px; width: {{ score }}%;">
                     </div>
+                </div>
+            </div>
 
+            <div
+                style="flex: 1; padding: 20px; background: #fffcfb; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <strong style="color: var(--text-primary);">Conversion Probability: {{ probability }}%</strong>
+                </div>
+                <div style="background: var(--border-color); border-radius: 99px; height: 8px; width: 100%;">
                     <div
-                        style="flex: 1; padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <strong>Conversion Probability: {{ probability }}%</strong>
-                        </div>
-                        <div style="background: #e2e8f0; border-radius: 99px; height: 10px; width: 100%;">
-                            <div
-                                style="background: #3b82f6; height: 100%; border-radius: 99px; width: {{ probability }}%;">
-                            </div>
-                        </div>
+                        style="background: var(--primary-color); height: 100%; border-radius: 99px; width: {{ probability }}%;">
                     </div>
                 </div>
-                {% endif %}
-
-                <div class="output-content">
-                    <pre>{{ output }}</pre>
-                </div>
-
-                <div class="action-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="btn-secondary"
-                        style="background: #e2e8f0; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer;">Compare
-                        Lead</button>
-                    <button class="btn-secondary"
-                        style="background: #3b82f6; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer;">Sync
-                        to CRM</button>
-                </div>
-            </section>
-            {% endif %}
+            </div>
         </div>
-    </div>
-</body>
+        {% endif %}
 
-</html>
+        <div class="output-content">
+            <pre>{{ output }}</pre>
+        </div>
+
+        <div class="action-buttons" style="margin-top: 30px; display: flex; gap: 15px;">
+            <button class="btn-secondary"
+                style="background: white; color: var(--text-primary); padding: 12px 24px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; font-weight: 600; flex: 1; transition: all 0.2s;">
+                Compare Lead
+            </button>
+            <button class="btn-primary" style="flex: 1; margin: 0;">
+                Sync to CRM
+            </button>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

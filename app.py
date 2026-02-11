@@ -6,6 +6,25 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = "marketai_secret_key" # Required for sessions
+
+def add_activity(title, description, icon="✨"):
+    from flask import session
+    from datetime import datetime
+    if 'activities' not in session:
+        session['activities'] = []
+    
+    activity = {
+        'title': title,
+        'description': description,
+        'icon': icon,
+        'time': datetime.now().strftime("%I:%M %p")
+    }
+    
+    # Keep only the last 3 activities
+    session['activities'].insert(0, activity)
+    session['activities'] = session['activities'][:3]
+    session.modified = True
 
 # Configure Groq
 client = Groq(
@@ -59,6 +78,8 @@ def campaign():
         5. Call-To-Action:
         """
         output = generate_response(prompt)
+        if "Error" not in output:
+            add_activity("Campaign Generated", f"Strategy created for {product}", icon="🚀")
     return render_template("campaign.html", output=output)
 
 # Sales Pitch Generator
@@ -91,6 +112,8 @@ def pitch():
         5. Call-To-Action:
         """
         output = generate_response(prompt)
+        if "Error" not in output:
+            add_activity("Sales Pitch Crafted", f"Pitch for {persona[:30]}...", icon="💼")
     return render_template("pitch.html", output=output)
 
 import re
@@ -150,6 +173,10 @@ def lead():
                 probability = 0
         except:
             probability = 0
+            
+        if "Error" not in output:
+            status_text = f"Hot Lead 🔥" if score >= 75 else "Warm Lead ⚠️" if score >= 50 else "Cold Lead ❄️"
+            add_activity("Lead Scored", f"{name}: {score}/100 ({status_text})", icon="🎯")
             
     return render_template("lead.html", output=output, score=score, probability=probability)
 
