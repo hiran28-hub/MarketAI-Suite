@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Register - MarketAI Suite{% endblock %}
+
+{% block header %}
+<h1 class="gradient-text" style="text-align: center;">Join MarketAI Suite</h1>
+<p class="subtitle" style="text-align: center;">Create your account to start scaling your business with AI.</p>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container"
+    style="max-width: 500px; margin: 40px auto; padding: 40px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-xl);">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger"
+        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid rgba(239, 68, 68, 0.2);">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="name"
+                style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Full
+                Name</label>
+            <input type="text" id="name" name="name" required placeholder="e.g. Sireesha Vardhan"
+                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="username"
+                style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Username</label>
+            <input type="text" id="username" name="username" required placeholder="Choose a unique username"
+                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+            <div class="form-group">
+                <label for="gender"
+                    style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Gender</label>
+                <select id="gender" name="gender" required
+                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+                    <option value="" disabled selected>Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dob"
+                    style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Date of
+                    Birth</label>
+                <input type="date" id="dob" name="dob" required
+                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="password"
+                style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Create a secure password"
+                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 25px;">
+            <label for="confirm_password"
+                style="display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary);">Confirm
+                Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required
+                placeholder="Confirm your password"
+                style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.02); color: var(--text-primary);">
+        </div>
+
+        <button type="submit" class="btn-primary"
+            style="width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            Register Account <i class="fas fa-user-plus"></i>
+        </button>
+    </form>
+
+    <div style="margin-top: 30px; text-align: center; font-size: 0.95rem; color: var(--text-secondary);">
+        Already have an account? <a href="{{ url_for('login') }}"
+            style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Login here</a>
+    </div>
+</div>
+
+<style>
+    .auth-container input:focus,
+    .auth-container select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: white;
+    }
+</style>
+{% endblock %}

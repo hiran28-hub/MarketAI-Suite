@@ -5,8 +5,11 @@ import requests
 import random
 import urllib.parse
 import json
+import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, request, session, send_from_directory, url_for
+from functools import wraps
+from flask import Flask, render_template, request, session, redirect, url_for, flash, Response, send_from_directory
+from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 from openai import OpenAI
 from pptx import Presentation
@@ -18,6 +21,46 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = "marketai_secret_key"
 
+# Database setup
+def init_db():
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            username TEXT UNIQUE NOT NULL,
+            gender TEXT NOT NULL,
+            dob TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS activities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            icon TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Auth decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Configure Gemini
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 # Using gemini-flash-latest as gemini-1.5-flash was not found in this environment
@@ -27,22 +70,18 @@ model = genai.GenerativeModel('gemini-flash-latest')
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def add_activity(title, description, icon="✨"):
-    from flask import session
-    from datetime import datetime
-    if 'activities' not in session:
-        session['activities'] = []
-    
-    activity = {
-        'title': title,
-        'description': description,
-        'icon': icon,
-        'time': datetime.now().strftime("%I:%M %p")
-    }
-    
-    # Keep only the last 3 activities
-    session['activities'].insert(0, activity)
-    session['activities'] = session['activities'][:3]
-    session.modified = True
+    if 'user_id' not in session:
+        return
+        
+    try:
+        conn = sqlite3.connect('marketai.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO activities (user_id, title, description, icon) VALUES (?, ?, ?, ?)",
+                  (session['user_id'], title, description, icon))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Database Activity Error: {e}")
 
 # Reusable AI function using Gemini
 def generate_response(prompt):
@@ -185,13 +224,102 @@ def generate_pptx_content(product_name, description, audience):
         # print(f"Raw response: {response.text}")
         return None
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        name = request.form["name"]
+        username = request.form["username"]
+        gender = request.form["gender"]
+        dob = request.form["dob"]
+        password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+
+        if password != confirm_password:
+            flash("Passwords do not match!")
+            return redirect(url_for('register'))
+
+        password_hash = generate_password_hash(password)
+
+        try:
+            conn = sqlite3.connect('marketai.db')
+            c = conn.cursor()
+            c.execute("INSERT INTO users (name, username, gender, dob, password_hash) VALUES (?, ?, ?, ?, ?)",
+                      (name, username, gender, dob, password_hash))
+            conn.commit()
+            user_id = c.lastrowid
+            conn.close()
+
+            session['user_id'] = user_id
+            session['username'] = username
+            session['name'] = name
+            add_activity("User Registered", f"Welcome to MarketAI Suite, {name}!", icon="👤")
+            return redirect(url_for('home'))
+        except sqlite3.IntegrityError:
+            flash("Username already exists!")
+            return redirect(url_for('register'))
+    
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        conn = sqlite3.connect('marketai.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = c.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user[5], password):
+            session['user_id'] = user[0]
+            session['username'] = user[2]
+            session['name'] = user[1]
+            add_activity("Logged In", f"Welcome back, {user[1]}", icon="🔑")
+            return redirect(url_for('home'))
+        else:
+            flash("Invalid username or password!")
+            
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
 # Home Page
 @app.route("/")
+@login_required
 def home():
-    return render_template("index.html")
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    # Fetch last 3 activities for the user
+    c.execute("SELECT title, description, icon, created_at FROM activities WHERE user_id = ? ORDER BY created_at DESC LIMIT 3", (session['user_id'],))
+    activities_raw = c.fetchall()
+    conn.close()
+    
+    activities = []
+    for act in activities_raw:
+        # Format time for display
+        try:
+            dt = datetime.strptime(act[3], "%Y-%m-%d %H:%M:%S")
+            time_str = dt.strftime("%I:%M %p")
+        except:
+            time_str = "Recently"
+            
+        activities.append({
+            'title': act[0],
+            'description': act[1],
+            'icon': act[2],
+            'time': time_str
+        })
+        
+    return render_template("index.html", activities=activities)
 
 # Campaign Generator
 @app.route("/campaign", methods=["GET", "POST"])
+@login_required
 def campaign():
     output = None
     if request.method == "POST":
@@ -220,8 +348,36 @@ def campaign():
             add_activity("Campaign Generated", f"Strategy created for {product}", icon="🚀")
     return render_template("campaign.html", output=output)
 
+@app.route("/activities")
+@login_required
+def activities():
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    # Fetch all activities for the user
+    c.execute("SELECT title, description, icon, created_at FROM activities WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+    activities_raw = c.fetchall()
+    conn.close()
+    
+    activities_list = []
+    for act in activities_raw:
+        try:
+            dt = datetime.strptime(act[3], "%Y-%m-%d %H:%M:%S")
+            time_str = dt.strftime("%b %d, %Y %I:%M %p")
+        except:
+            time_str = act[3]
+            
+        activities_list.append({
+            'title': act[0],
+            'description': act[1],
+            'icon': act[2],
+            'time': time_str
+        })
+        
+    return render_template("activities.html", activities=activities_list)
+
 # Sales Pitch Generator
 @app.route("/pitch", methods=["GET", "POST"])
+@login_required
 def pitch():
     output = None
     if request.method == "POST":
@@ -258,6 +414,7 @@ import re
 
 # Lead Scoring
 @app.route("/lead", methods=["GET", "POST"])
+@login_required
 def lead():
     output = None
     score = 0
@@ -319,6 +476,7 @@ def lead():
     return render_template("lead.html", output=output, score=score, probability=probability)
 
 @app.route("/logo", methods=["GET", "POST"])
+@login_required
 def logo():
     image_filename = None
     if request.method == "POST":
@@ -344,6 +502,7 @@ def logo():
     return render_template("logo.html", image_filename=image_filename)
 
 @app.route("/deck", methods=["GET", "POST"])
+@login_required
 def deck():
     deck_filename = None
     error = None
@@ -363,6 +522,7 @@ def deck():
     return render_template("deck.html", deck_filename=deck_filename, error=error)
 
 @app.route("/email", methods=["GET", "POST"])
+@login_required
 def email():
     output = None
     subject = None
@@ -435,6 +595,7 @@ def email():
 from flask import Response
 
 @app.route("/download_email")
+@login_required
 def download_email():
     subject = request.args.get('subject', 'Cold Email')
     body = request.args.get('body', '')
@@ -446,6 +607,7 @@ def download_email():
     )
 
 @app.route("/download/<path:filename>")
+@login_required
 def download_file(filename):
     return send_from_directory(os.path.join(app.static_folder, 'generated'), filename, as_attachment=True)
 

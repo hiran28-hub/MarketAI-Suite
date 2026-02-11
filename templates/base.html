@@ -19,11 +19,21 @@
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-item">Home</a>
+                {% if session.user_id %}
                 <a href="/campaign" class="nav-item">Campaigns</a>
                 <a href="/pitch" class="nav-item">Pitches</a>
                 <a href="/lead" class="nav-item">Leads</a>
+                <a href="/activities" class="nav-item">Activity</a>
                 <a href="/deck" class="nav-item">Pitch Deck</a>
                 <a href="/email" class="nav-item">Cold Email</a>
+                <span class="nav-item" style="color: var(--primary-color); font-weight: 600;">Hi, {{
+                    session.name.split(' ')[0] }}</span>
+                <a href="/logout" class="nav-item" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i>
+                    Logout</a>
+                {% else %}
+                <a href="/login" class="nav-item">Login</a>
+                <a href="/register" class="nav-item">Register</a>
+                {% endif %}
             </div>
         </div>
     </nav>

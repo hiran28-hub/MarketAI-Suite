@@ -69,14 +69,17 @@
     <div
         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; max-width: 1000px; margin-left: auto; margin-right: auto;">
         <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Recent Activity</h3>
+        <a href="/activities"
+            style="font-size: 0.85rem; color: var(--primary-color); text-decoration: none; font-weight: 600;">View All
+            History →</a>
         <span style="font-size: 0.85rem; color: var(--text-secondary);">System: <span
                 style="color: #16a34a; font-weight: 600;">Operational</span></span>
     </div>
 
     <div class="activity-card"
         style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; max-width: 1000px; margin-left: auto; margin-right: auto; box-shadow: var(--shadow-sm);">
-        {% if session.activities %}
-        {% for activity in session.activities %}
+        {% if activities %}
+        {% for activity in activities %}
         <div class="activity-item"
             style="display: flex; gap: 20px; align-items: center; padding-bottom: 20px; border-bottom: {% if not loop.last %}1px solid var(--border-color){% else %}none{% endif %}; margin-bottom: {% if not loop.last %}20px{% else %}0{% endif %};">
             <div
@@ -98,8 +101,10 @@
                 style="background: rgba(99, 102, 241, 0.15); color: #818cf8; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
                 ✨</div>
             <div style="flex-grow: 1;">
-                <h4 style="margin: 0; font-size: 1rem; color: white; font-weight: 500;">Ready for Exploration</h4>
-                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #94a3b8;">No activity yet. Start by using one of
+                <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 500;">Ready for
+                    Exploration</h4>
+                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">No activity yet. Start by
+                    using one of
                     the tools above.</p>
             </div>
         </div>
