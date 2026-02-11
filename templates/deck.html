@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Pitch Deck Creator - MarketAI Suite{% endblock %}
+
+{% block header %}
+<h1 class="gradient-text">Pitch Deck Creator</h1>
+<p class="subtitle">AI-powered presentations generated locally with Gemini</p>
+{% endblock %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="card form-card">
+        <form method="POST">
+            <div class="form-group">
+                <label for="product_name">Product Name</label>
+                <input type="text" id="product_name" name="product_name" placeholder="e.g. EcoSpark Solar Charger"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="audience">Target Audience</label>
+                <input type="text" id="audience" name="audience"
+                    placeholder="e.g. Adventure travelers and eco-conscious techies" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">What should the deck cover?</label>
+                <textarea id="description" name="description" rows="4"
+                    placeholder="Include key features, market problem, and unique value proposition..."
+                    required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">📊</span> Generate Pitch Deck
+            </button>
+        </form>
+    </div>
+
+    {% if error %}
+    <div class="card error-card" style="margin-top: 30px; border-left: 4px solid #ef4444;">
+        <div class="card-body">
+            <h3 style="color: #ef4444; margin-top: 0;">Generation Error</h3>
+            <p>{{ error }}</p>
+            <p style="font-size: 0.85rem; opacity: 0.8;">Please ensure your <code>GEMINI_API_KEY</code> is correctly set
+                in the environment.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if deck_filename %}
+    <div class="card result-card" style="margin-top: 30px;">
+        <div class="card-body" style="text-align: center;">
+            <div class="success-icon" style="font-size: 3rem; margin-bottom: 15px;">🎉</div>
+            <h2>Your Deck is Ready!</h2>
+            <p>We've converted your vision into a professional PowerPoint presentation.</p>
+
+            <div style="margin: 30px 0;">
+                <a href="{{ url_for('download_file', filename=deck_filename) }}" class="btn btn-primary"
+                    style="display: inline-flex; align-items: center; gap: 10px;">
+                    Download PowerPoint (.pptx) <i class="fas fa-download"></i>
+                </a>
+            </div>
+
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                You can now open the file in PowerPoint, Keynote, or Google Slides to add your brand colors and final
+                touches.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.02);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .tool-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}

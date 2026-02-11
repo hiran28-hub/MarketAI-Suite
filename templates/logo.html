@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Logo Generator - MarketAI Suite{% endblock %}
+
+{% block header %}
+<h1>Logo & Brand Generator</h1>
+<p>Create professional brand identities in seconds.</p>
+{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="input-section">
+        <form method="POST" action="/logo">
+            <div class="form-group">
+                <label for="name">Business Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Bloom & Co.">
+            </div>
+
+            <div class="form-group">
+                <label for="style">Logo Style</label>
+                <select id="style" name="style">
+                    <option value="Minimalist">Minimalist & Clean</option>
+                    <option value="Modern Luxury">Modern Luxury</option>
+                    <option value="Vintage/Classic">Vintage & Classic</option>
+                    <option value="Tech/Futuristic">Tech & Futuristic</option>
+                    <option value="Playful/Organic">Playful & Organic</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="color">Primary Color Mood</label>
+                <input type="text" id="color" name="color" placeholder="e.g., Dusty Rose and Sage Green">
+            </div>
+
+            <button type="submit" class="btn-primary">Generate Brand Assets</button>
+        </form>
+    </section>
+
+    <section class="output-section">
+        {% if image_filename %}
+        <h2>Generated Identity</h2>
+        <div class="logo-display"
+            style="text-align: center; background: white; padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 20px; position: relative; min-height: 200px;">
+            <div id="loader" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+                <p style="margin-top: 10px; font-size: 0.9rem;">Perfecting your brand...</p>
+            </div>
+            <img src="{{ url_for('static', filename='generated/' + image_filename) }}" alt="Generated Logo"
+                style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow-md); opacity: 0; transition: opacity 0.5s ease;"
+                onload="this.style.opacity='1'; document.getElementById('loader').style.display='none';">
+
+            <div id="controls" style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+                <a href="{{ url_for('download_file', filename=image_filename) }}" class="btn-primary"
+                    style="width: auto; padding: 12px 24px;">Download JPEG</a>
+                <button class="btn-secondary"
+                    style="background: var(--background-color); color: var(--text-primary); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">Save
+                    to Media Library</button>
+            </div>
+        </div>
+        <div class="output-content" style="margin-top: 30px;">
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+                <strong>Prompt Used:</strong> Professional minimalist logo for your business, designed in the selected
+                style and color palette. This asset is ready for social media and website use.
+            </p>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+            <i class="fas fa-magic" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+            <p>Enter your business details to generate your unique brand assets.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

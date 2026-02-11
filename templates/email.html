@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Cold Email Generator - MarketAI Suite{% endblock %}
+
+{% block header %}
+<h1>Cold Email Generator</h1>
+<p>Craft high-converting, personalized B2B outreach emails.</p>
+{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="input-section">
+        <form method="POST" action="/email">
+            <div class="form-group">
+                <label for="product">Product / Service Description</label>
+                <textarea id="product" name="product" required placeholder="Describe what you are offering..."
+                    style="min-height: 80px;"></textarea>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="role">Target Recipient Role</label>
+                    <input type="text" id="role" name="role" required placeholder="e.g., CTO, Marketing Head">
+                </div>
+                <div class="form-group">
+                    <label for="industry">Industry</label>
+                    <input type="text" id="industry" name="industry" required placeholder="e.g., SaaS, FinTech">
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="company_size">Company Size</label>
+                    <select id="company_size" name="company_size">
+                        <option value="Startup (<50)">Startup (<50)< /option>
+                        <option value="Mid-Market (50-500)">Mid-Market (50-500)</option>
+                        <option value="Enterprise (500+)">Enterprise (500+)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tone">Tone</label>
+                    <select id="tone" name="tone">
+                        <option value="Formal">Formal</option>
+                        <option value="Direct">Direct</option>
+                        <option value="Strategic">Strategic</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="value">Main Value Proposition</label>
+                <textarea id="value" name="value" required placeholder="What is the unique benefit?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="problem">Problem Being Solved</label>
+                <textarea id="problem" name="problem" required placeholder="What pain point do you address?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="cta">Preferred Call To Action</label>
+                <input type="text" id="cta" name="cta" required placeholder="e.g., Schedule a 15-min demo">
+            </div>
+
+            <button type="submit" class="btn-primary">Generate Cold Email</button>
+        </form>
+    </section>
+
+    <section class="output-section">
+        {% if subject %}
+        <div class="result-card"
+            style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; box-shadow: var(--shadow-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">Your Cold Email</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="copyToClipboard()" class="btn-secondary"
+                        style="padding: 8px 15px; font-size: 0.85rem;">Copy to Clipboard</button>
+                    <a href="{{ url_for('download_email', subject=subject, body=body) }}" class="btn-primary"
+                        style="padding: 8px 15px; font-size: 0.85rem; width: auto;">Download .txt</a>
+                </div>
+            </div>
+
+            <div id="email-content">
+                <div class="subject-line"
+                    style="background: rgba(138, 97, 92, 0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); margin-bottom: 20px;">
+                    <strong style="color: var(--primary-color);">Subject:</strong> <span id="subject-text">{{ subject
+                        }}</span>
+                </div>
+
+                <div class="email-body"
+                    style="white-space: pre-wrap; color: var(--text-primary); line-height: 1.6; font-size: 0.95rem;"
+                    id="body-text">{{ body }}</div>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+            <i class="fas fa-envelope-open-text" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+            <p>Fill in the details to generate a high-converting cold email.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const subject = document.getElementById('subject-text').innerText;
+        const body = document.getElementById('body-text').innerText;
+        const fullText = `Subject: ${subject}\n\n${body}`;
+
+        navigator.clipboard.writeText(fullText).then(() => {
+            alert('Email copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+</script>
+{% endblock %}
