@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block header %}
-<div class="dashboard-header" style="padding-top: 40px;">
+<div id="vanta-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+<div class="dashboard-header" style="padding-top: 40px; position: relative; z-index: 10;">
     <h1 style="margin: 0;">MarketAI Suite</h1>
     <p style="opacity: 0.8; font-size: 1.1rem; font-weight: 300; margin-top: 10px;">Your AI-powered marketing and sales
         co-pilot.</p>
@@ -9,143 +11,208 @@
 {% endblock %}
 
 {% block content %}
-<main class="dashboard-grid">
-    <a href="/campaign" class="card dashboard-card">
-        <div class="card-icon">🚀</div>
-        <div class="card-body">
-            <h2>Campaign Generator</h2>
-            <p>Scale your marketing with AI-driven content and strategy.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
+<div style="position: relative; z-index: 10;">
+    <main class="dashboard-grid">
+        <a href="/campaign" class="card dashboard-card">
+            <div class="card-icon">🚀</div>
+            <div class="card-body">
+                <h2>Campaign Generator</h2>
+                <p>Scale your marketing with AI-driven content and strategy.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
 
-    <a href="/pitch" class="card dashboard-card">
-        <div class="card-icon">💼</div>
-        <div class="card-body">
-            <h2>Sales Pitch Generator</h2>
-            <p>Close more deals with hyper-personalized B2B sales pitches.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
+        <a href="/pitch" class="card dashboard-card">
+            <div class="card-icon">💼</div>
+            <div class="card-body">
+                <h2>Sales Pitch Generator</h2>
+                <p>Close more deals with hyper-personalized B2B sales pitches.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
 
-    <a href="/lead" class="card dashboard-card">
-        <div class="card-icon">🎯</div>
-        <div class="card-body">
-            <h2>Lead Scoring</h2>
-            <p>Data-backed lead qualification and urgency analysis.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
+        <a href="/lead" class="card dashboard-card">
+            <div class="card-icon">🎯</div>
+            <div class="card-body">
+                <h2>Lead Scoring</h2>
+                <p>Data-backed lead qualification and urgency analysis.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
 
-    <a href="/logo" class="card dashboard-card">
-        <div class="card-icon">🎨</div>
-        <div class="card-body">
-            <h2>Logo Generator</h2>
-            <p>Design professional brand identities and logos with AI.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
+        <a href="/logo" class="card dashboard-card">
+            <div class="card-icon">🎨</div>
+            <div class="card-body">
+                <h2>Logo Generator</h2>
+                <p>Design professional brand identities and logos with AI.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
 
-    <a href="/deck" class="card dashboard-card">
-        <div class="card-icon">📊</div>
-        <div class="card-body">
-            <h2>Pitch Deck Creator</h2>
-            <p>Generate professional presentations instantly via Gemini.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
+        <a href="/deck" class="card dashboard-card">
+            <div class="card-icon">📊</div>
+            <div class="card-body">
+                <h2>Pitch Deck Creator</h2>
+                <p>Generate professional presentations instantly via Gemini.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
 
-    <a href="/email" class="card dashboard-card">
-        <div class="card-icon">📧</div>
-        <div class="card-body">
-            <h2>Cold Email Generator</h2>
-            <p>Write high-converting B2B outreach emails with AI.</p>
-            <span class="card-link">Launch Tool →</span>
-        </div>
-    </a>
-</main>
+        <a href="/email" class="card dashboard-card">
+            <div class="card-icon">📧</div>
+            <div class="card-body">
+                <h2>Cold Email Generator</h2>
+                <p>Write high-converting B2B outreach emails with AI.</p>
+                <span class="card-link">Launch Tool →</span>
+            </div>
+        </a>
+    </main>
 
-<div class="activity-section" style="margin-top: 60px;">
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; max-width: 1000px; margin-left: auto; margin-right: auto;">
-        <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Recent Activity</h3>
-        <a href="/activities"
-            style="font-size: 0.85rem; color: var(--primary-color); text-decoration: none; font-weight: 600;">View All
-            History →</a>
-        <span style="font-size: 0.85rem; color: var(--text-secondary);">System: <span
-                style="color: #16a34a; font-weight: 600;">Operational</span></span>
+    <div class="activity-section" style="margin-top: 60px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+            <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Recent Activity</h3>
+            <a href="/activities"
+                style="font-size: 0.85rem; color: var(--primary-color); text-decoration: none; font-weight: 600;">View
+                All
+                History →</a>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">System: <span
+                    style="color: #16a34a; font-weight: 600;">Operational</span></span>
+        </div>
+
+        <div class="activity-card"
+            style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(138, 97, 92, 0.1); border-radius: 20px; padding: 25px; max-width: 1000px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 20px rgba(138, 97, 92, 0.05);">
+            {% if activities %}
+            {% for activity in activities %}
+            <div class="activity-item{% if not loop.last %}{% else %} no-border{% endif %}">
+                <div
+                    style="background: rgba(138, 97, 92, 0.1); color: var(--primary-color); min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
+                    {{ activity.icon }}</div>
+                <div style="flex-grow: 1;">
+                    <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 600;">{{
+                        activity.title
+                        }}</h4>
+                    <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">{{
+                        activity.description
+                        }}</p>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">{{ activity.time }}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="activity-item no-border">
+                <div
+                    style="background: rgba(138, 97, 92, 0.1); color: var(--primary-color); min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
+                    ✨</div>
+                <div style="flex-grow: 1;">
+                    <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 500;">Ready for
+                        Exploration</h4>
+                    <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">No activity yet.
+                        Start by
+                        using one of
+                        the tools above.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="activity-card"
-        style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; max-width: 1000px; margin-left: auto; margin-right: auto; box-shadow: var(--shadow-sm);">
-        {% if activities %}
-        {% for activity in activities %}
-        <div class="activity-item"
-            style="display: flex; gap: 20px; align-items: center; padding-bottom: 20px; border-bottom: {% if not loop.last %}1px solid var(--border-color){% else %}none{% endif %}; margin-bottom: {% if not loop.last %}20px{% else %}0{% endif %};">
-            <div
-                style="background: rgba(138, 97, 92, 0.1); color: var(--primary-color); min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
-                {{ activity.icon }}</div>
-            <div style="flex-grow: 1;">
-                <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 600;">{{ activity.title
-                    }}</h4>
-                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">{{ activity.description
-                    }}</p>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap;">{{ activity.time }}
-            </div>
+    <section class="platforms-section"
+        style="background: linear-gradient(135deg, rgba(166, 131, 127, 0.9) 0%, rgba(138, 97, 92, 0.9) 100%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+        <h2>Supported Platforms</h2>
+        <div class="platforms-grid">
+            <!-- Row 1 (4 items) -->
+            <a href="#" class="platform-card">
+                <i class="fab fa-linkedin"></i>
+                <span>LinkedIn</span>
+            </a>
+            <a href="#" class="platform-card">
+                <i class="fab fa-facebook"></i>
+                <span>Facebook</span>
+            </a>
+            <a href="#" class="platform-card">
+                <i class="fab fa-instagram"></i>
+                <span>Instagram</span>
+            </a>
+            <a href="#" class="platform-card">
+                <i class="fab fa-twitter"></i>
+                <span>Twitter/X</span>
+            </a>
+
+            <!-- Row 2 (3 items) -->
+            <a href="#" class="platform-card row-2">
+                <i class="fab fa-youtube"></i>
+                <span>YouTube</span>
+            </a>
+            <a href="#" class="platform-card row-2">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+            </a>
+            <a href="#" class="platform-card row-2">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsApp</span>
+            </a>
         </div>
-        {% endfor %}
-        {% else %}
-        <div class="activity-item" style="display: flex; gap: 20px; align-items: center;">
-            <div
-                style="background: rgba(99, 102, 241, 0.15); color: #818cf8; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
-                ✨</div>
-            <div style="flex-grow: 1;">
-                <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 500;">Ready for
-                    Exploration</h4>
-                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">No activity yet. Start by
-                    using one of
-                    the tools above.</p>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+    </section>
 </div>
 
-<section class="platforms-section">
-    <h2>Supported Platforms</h2>
-    <div class="platforms-grid">
-        <!-- Row 1 (4 items) -->
-        <a href="#" class="platform-card">
-            <i class="fab fa-linkedin"></i>
-            <span>LinkedIn</span>
-        </a>
-        <a href="#" class="platform-card">
-            <i class="fab fa-facebook"></i>
-            <span>Facebook</span>
-        </a>
-        <a href="#" class="platform-card">
-            <i class="fab fa-instagram"></i>
-            <span>Instagram</span>
-        </a>
-        <a href="#" class="platform-card">
-            <i class="fab fa-twitter"></i>
-            <span>Twitter/X</span>
-        </a>
+<!-- Vanta.js Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
 
-        <!-- Row 2 (3 items) -->
-        <a href="#" class="platform-card row-2">
-            <i class="fab fa-youtube"></i>
-            <span>YouTube</span>
-        </a>
-        <a href="#" class="platform-card row-2">
-            <i class="fas fa-envelope"></i>
-            <span>Email</span>
-        </a>
-        <a href="#" class="platform-card row-2">
-            <i class="fab fa-whatsapp"></i>
-            <span>WhatsApp</span>
-        </a>
-    </div>
-</section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        VANTA.GLOBE({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x8a615c,
+            color2: 0x4a3a37,
+            backgroundColor: 0xfdfbf9,
+            size: 1.10
+        });
+    });
+</script>
+
+<style>
+    .card.dashboard-card {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(138, 97, 92, 0.1) !important;
+        box-shadow: 0 4px 15px rgba(138, 97, 92, 0.05) !important;
+    }
+
+    .card.dashboard-card:hover {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: var(--primary-color) !important;
+        transform: translateY(-8px) !important;
+        box-shadow: 0 15px 30px rgba(138, 97, 92, 0.15) !important;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(138, 97, 92, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .activity-item.no-border {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    body {
+        background-color: transparent !important;
+    }
+</style>
 {% endblock %}

@@ -54,9 +54,9 @@
             <h2>Your Deck is Ready!</h2>
             <p>We've converted your vision into a professional PowerPoint presentation.</p>
 
-            <div style="margin: 30px 0;">
-                <a href="{{ url_for('download_file', filename=deck_filename) }}" class="btn btn-primary"
-                    style="display: inline-flex; align-items: center; gap: 10px;">
+            <div style="margin: 30px 0; display: flex; justify-content: center;">
+                <a href="{{ url_for('download_file', filename=deck_filename) }}" class="btn-primary"
+                    style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: auto; min-width: 300px; text-decoration: none !important; color: white !important; border-radius: 12px; padding: 14px 30px;">
                     Download PowerPoint (.pptx) <i class="fas fa-download"></i>
                 </a>
             </div>

@@ -15,7 +15,8 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
-                <span class="logo-icon">✨</span> MarketAI Suite
+                <img src="{{ url_for('static', filename='brand/logo.png') }}" alt="MarketAI Logo" class="logo-icon-img"
+                    style="height: 32px; width: 32px; border-radius: 6px; margin-right: 10px;"> MarketAI Suite
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-item">Home</a>
@@ -81,7 +82,8 @@
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div class="chat-input-area">
-                <textarea id="chat-input" class="chat-input" rows="2" placeholder="Ask about B2B sales, marketing, leads..." maxlength="4000"></textarea>
+                <textarea id="chat-input" class="chat-input" rows="2"
+                    placeholder="Ask about B2B sales, marketing, leads..." maxlength="4000"></textarea>
                 <button type="button" id="chat-send" class="chat-send-btn">
                     <i class="fas fa-paper-plane"></i> Send
                 </button>

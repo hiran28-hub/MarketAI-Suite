@@ -31,7 +31,8 @@
             </div>
             <div class="form-group">
                 <label for="color_preference">Color Preference (optional)</label>
-                <input type="text" id="color_preference" name="color_preference" placeholder="e.g., Dusty Rose and Sage Green">
+                <input type="text" id="color_preference" name="color_preference"
+                    placeholder="e.g., Dusty Rose and Sage Green">
             </div>
             <div class="form-group">
                 <label for="tagline">Tagline (optional)</label>
@@ -42,42 +43,80 @@
     </section>
 
     <section class="output-section">
-        <h2>Generated Logo</h2>
+        <h2>Generated Logos</h2>
         <div id="logo-result-container" class="logo-display" style="display: none;">
             <div id="logo-loading" class="logo-loading" style="display: none;">
                 <div class="logo-spinner"></div>
-                <p>Generating your logo...</p>
+                <p>Generating your brand identities...</p>
             </div>
-            <div id="logo-image-wrap" style="display: none; text-align: center; background: white; padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 20px;">
-                <img id="logo-image" src="" alt="Generated Logo" class="logo-output-img">
-                <div id="logo-actions" class="logo-actions">
-                    <button type="button" id="btn-download-png" class="btn-primary" style="width: auto; padding: 12px 24px;">
-                        <i class="fas fa-download"></i> Download as PNG
-                    </button>
-                    <button type="button" id="btn-regenerate" class="btn-secondary logo-btn-secondary">
-                        <i class="fas fa-sync-alt"></i> Regenerate
-                    </button>
-                </div>
+
+            <div id="logo-grid" class="logo-grid-output" style="display: none;">
+                <!-- Multiple logos will be injected here -->
             </div>
+
             <div id="logo-error" class="logo-error" style="display: none;"></div>
         </div>
         <div id="logo-placeholder" class="logo-placeholder">
             <i class="fas fa-magic"></i>
-            <p>Enter your brand details and click <strong>Generate Logo</strong> to create your logo here.</p>
+            <p>Enter your brand details and click <strong>Generate Logo</strong> to see your options.</p>
         </div>
     </section>
 </div>
 
 <style>
-    .logo-display { position: relative; min-height: 200px; }
+    .logo-grid-output {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .logo-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .logo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .logo-output-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .logo-card-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .logo-display {
+        position: relative;
+        min-height: 200px;
+    }
+
     .logo-loading {
         text-align: center;
-        padding: 40px 20px;
+        padding: 60px 20px;
         background: var(--card-bg);
         border-radius: 12px;
         border: 1px solid var(--border-color);
     }
-    .logo-loading p { margin: 16px 0 0; color: var(--text-secondary); font-size: 0.95rem; }
+
+    .logo-loading p {
+        margin: 16px 0 0;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
     .logo-spinner {
         width: 48px;
         height: 48px;
@@ -87,34 +126,30 @@
         border-radius: 50%;
         animation: logo-spin 0.9s linear infinite;
     }
-    @keyframes logo-spin { to { transform: rotate(360deg); } }
-    .logo-output-img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: var(--shadow-md);
+
+    @keyframes logo-spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
-    .logo-actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .logo-btn-secondary {
-        background: var(--background-color);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .logo-btn-secondary:hover { background: var(--border-color); }
+
     .logo-placeholder {
         text-align: center;
         padding: 60px 20px;
         color: var(--text-secondary);
     }
-    .logo-placeholder i { font-size: 3rem; margin-bottom: 20px; opacity: 0.4; }
-    .logo-placeholder p { margin: 0; font-size: 1rem; }
+
+    .logo-placeholder i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        opacity: 0.4;
+    }
+
+    .logo-placeholder p {
+        margin: 0;
+        font-size: 1rem;
+    }
+
     .logo-error {
         margin-top: 16px;
         padding: 12px;
@@ -126,136 +161,130 @@
 </style>
 
 <script>
-(function () {
-    var form = document.getElementById('logo-form');
-    var resultContainer = document.getElementById('logo-result-container');
-    var placeholder = document.getElementById('logo-placeholder');
-    var loadingEl = document.getElementById('logo-loading');
-    var imageWrapEl = document.getElementById('logo-image-wrap');
-    var img = document.getElementById('logo-image');
-    var errorEl = document.getElementById('logo-error');
-    var btnGenerate = document.getElementById('btn-generate');
-    var btnDownload = document.getElementById('btn-download-png');
-    var btnRegenerate = document.getElementById('btn-regenerate');
+    (function () {
+        var form = document.getElementById('logo-form');
+        var resultContainer = document.getElementById('logo-result-container');
+        var placeholder = document.getElementById('logo-placeholder');
+        var loadingEl = document.getElementById('logo-loading');
+        var gridEl = document.getElementById('logo-grid');
+        var errorEl = document.getElementById('logo-error');
+        var btnGenerate = document.getElementById('btn-generate');
 
-    function hideGlobalLoader() {
-        var el = document.getElementById('loading-overlay');
-        if (el) el.style.display = 'none';
-    }
-
-    function showLoading() {
-        placeholder.style.display = 'none';
-        resultContainer.style.display = 'block';
-        loadingEl.style.display = 'block';
-        if (imageWrapEl) imageWrapEl.style.display = 'none';
-        if (errorEl) errorEl.style.display = 'none';
-        btnGenerate.disabled = true;
-    }
-
-    function showImage(dataUrl) {
-        hideGlobalLoader();
-        loadingEl.style.display = 'none';
-        errorEl.style.display = 'none';
-        imageWrapEl.style.display = 'block';
-        img.src = dataUrl;
-        img.dataset.dataUrl = dataUrl;
-        placeholder.style.display = 'none';
-        resultContainer.style.display = 'block';
-        btnGenerate.disabled = false;
-    }
-
-    function showError(msg) {
-        hideGlobalLoader();
-        loadingEl.style.display = 'none';
-        imageWrapEl.style.display = 'none';
-        errorEl.style.display = 'block';
-        errorEl.textContent = msg || 'Something went wrong. Please try again.';
-        resultContainer.style.display = 'block';
-        placeholder.style.display = 'none';
-        btnGenerate.disabled = false;
-    }
-
-    function getFormData() {
-        return {
-            brand_name: (document.getElementById('brand_name').value || '').trim(),
-            industry: (document.getElementById('industry').value || '').trim(),
-            style_preference: (document.getElementById('style_preference').value || '').trim(),
-            color_preference: (document.getElementById('color_preference').value || '').trim(),
-            tagline: (document.getElementById('tagline').value || '').trim()
-        };
-    }
-
-    function generateLogo() {
-        var data = getFormData();
-        if (!data.brand_name || !data.industry || !data.style_preference) {
-            showError('Please fill in Brand Name, Industry, and Style.');
-            return;
+        function hideGlobalLoader() {
+            var el = document.getElementById('loading-overlay');
+            if (el) el.style.display = 'none';
         }
-        showLoading();
-        fetch('/generate-logo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(data)
-        })
-            .then(function (res) {
-                return res.json().then(function (body) {
-                    if (res.status === 401) {
-                        window.location.href = '/login';
+
+        function showLoading() {
+            placeholder.style.display = 'none';
+            resultContainer.style.display = 'block';
+            loadingEl.style.display = 'block';
+            gridEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            btnGenerate.disabled = true;
+        }
+
+        function renderLogos(logos) {
+            hideGlobalLoader();
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            gridEl.innerHTML = '';
+            gridEl.style.display = 'grid';
+
+            logos.forEach(function (logo, index) {
+                var dataUrl = 'data:' + logo.mime + ';base64,' + logo.image_base64;
+                var card = document.createElement('div');
+                card.className = 'logo-card';
+                card.innerHTML = `
+                <img src="${dataUrl}" alt="Logo Option ${index + 1}" class="logo-output-img">
+                <div class="logo-card-actions">
+                    <button type="button" class="btn-primary btn-download" style="width: auto; padding: 10px 20px; font-size: 0.85rem;">
+                        <i class="fas fa-download"></i> PNG
+                    </button>
+                    <button type="button" class="btn-secondary btn-save" style="width: auto; padding: 10px 20px; font-size: 0.85rem; background: var(--background-color); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px;">
+                        <i class="fas fa-bookmark"></i> Save
+                    </button>
+                </div>
+            `;
+
+                card.querySelector('.btn-download').addEventListener('click', function () {
+                    var a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = 'marketai-logo-' + Date.now() + '-' + (index + 1) + '.png';
+                    a.click();
+                });
+
+                gridEl.appendChild(card);
+            });
+
+            placeholder.style.display = 'none';
+            resultContainer.style.display = 'block';
+            btnGenerate.disabled = false;
+        }
+
+        function showError(msg) {
+            hideGlobalLoader();
+            loadingEl.style.display = 'none';
+            gridEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            errorEl.textContent = msg || 'Something went wrong. Please try again.';
+            resultContainer.style.display = 'block';
+            placeholder.style.display = 'none';
+            btnGenerate.disabled = false;
+        }
+
+        function getFormData() {
+            return {
+                brand_name: (document.getElementById('brand_name').value || '').trim(),
+                industry: (document.getElementById('industry').value || '').trim(),
+                style_preference: (document.getElementById('style_preference').value || '').trim(),
+                color_preference: (document.getElementById('color_preference').value || '').trim(),
+                tagline: (document.getElementById('tagline').value || '').trim(),
+                num_options: 4 // Hardcoded for now to provide "options"
+            };
+        }
+
+        function generateLogo() {
+            var data = getFormData();
+            if (!data.brand_name || !data.industry || !data.style_preference) {
+                showError('Please fill in Brand Name, Industry, and Style.');
+                return;
+            }
+            showLoading();
+            fetch('/generate-logo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(data)
+            })
+                .then(function (res) {
+                    return res.json().then(function (body) {
+                        if (res.status === 401) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        if (!res.ok) {
+                            throw new Error(body.error || 'Generation failed');
+                        }
+                        return body;
+                    });
+                })
+                .then(function (body) {
+                    if (!body || !body.logos || body.logos.length === 0) {
+                        showError('No logos returned in response.');
                         return;
                     }
-                    if (!res.ok) {
-                        throw new Error(body.error || 'Generation failed');
-                    }
-                    return body;
+                    renderLogos(body.logos);
+                })
+                .catch(function (err) {
+                    showError(err.message);
                 });
-            })
-            .then(function (body) {
-                if (!body || !body.image_base64) {
-                    showError('No image in response.');
-                    return;
-                }
-                var mime = body.mime || 'image/png';
-                var dataUrl = 'data:' + mime + ';base64,' + body.image_base64;
-                showImage(dataUrl);
-            })
-            .catch(function (err) {
-                showError(err.message);
-            });
-    }
+        }
 
-    function downloadPng() {
-        var dataUrl = img.dataset.dataUrl || img.src;
-        if (!dataUrl || dataUrl.indexOf('data:') !== 0) return;
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        var im = new Image();
-        im.crossOrigin = 'anonymous';
-        im.onload = function () {
-            canvas.width = im.width;
-            canvas.height = im.height;
-            ctx.drawImage(im, 0, 0);
-            var pngData = canvas.toDataURL('image/png');
-            var a = document.createElement('a');
-            a.href = pngData;
-            a.download = 'marketai-logo-' + Date.now() + '.png';
-            a.click();
-        };
-        im.onerror = function () {
-            var a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = 'marketai-logo-' + Date.now() + '.png';
-            a.click();
-        };
-        im.src = dataUrl;
-    }
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        generateLogo();
-    });
-    if (btnRegenerate) btnRegenerate.addEventListener('click', generateLogo);
-    if (btnDownload) btnDownload.addEventListener('click', downloadPng);
-})();
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            generateLogo();
+        });
+    })();
 </script>
 {% endblock %}

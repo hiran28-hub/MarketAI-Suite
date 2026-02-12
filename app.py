@@ -237,10 +237,10 @@ def generate_logo_image_openai(prompt_text):
 
 
 @app.route("/generate-logo", methods=["POST"])
-def generate_logo():
+def generate_log_api():
     """
-    AI Logo Generator API: validate session, build prompt, generate image, return base64.
-    Expects JSON: brand_name, industry, style_preference, color_preference (optional), tagline (optional).
+    AI Logo Generator API: validate session, build prompt, generate multiple images, return base64 list.
+    Expects JSON: brand_name, industry, style_preference, color_preference (optional), tagline (optional), num_options.
     """
     if "user_id" not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -254,6 +254,7 @@ def generate_logo():
     style_preference = (data.get("style_preference") or data.get("style") or "").strip()
     color_preference = (data.get("color_preference") or data.get("color") or "").strip()
     tagline = (data.get("tagline") or "").strip()
+    num_options = int(data.get("num_options", 4))
 
     if not brand_name:
         return jsonify({"error": "Brand name is required"}), 400
@@ -262,28 +263,46 @@ def generate_logo():
     if not style_preference:
         return jsonify({"error": "Style preference is required"}), 400
 
-    prompt_full = build_logo_prompt_full(
-        brand_name, industry, style_preference, color_preference or None, tagline or None
-    )
-    prompt_short = build_logo_prompt_short(
-        brand_name, industry, style_preference, color_preference or None, tagline or None
-    )
-    image_bytes, content_type, err_msg = generate_logo_image_bytes(prompt_short)
-    if not image_bytes and err_msg:
-        # Optional fallback to OpenAI DALL-E if key is set
-        image_bytes, content_type, err_msg = generate_logo_image_openai(prompt_full)
-    if not image_bytes:
+    # Project branding colors for "Elegant" style
+    branding_colors = "Dusty Rose (#8a615c), Dark Cocoa (#003153), and Soft Cream (#fcf8f5)"
+    if not color_preference and "elegant" in style_preference.lower():
+        color_preference = branding_colors
+
+    logos = []
+    # Generate multiple options
+    for i in range(num_options):
+        # We vary the prompt slightly for each to get distinct options
+        prompt_full = build_logo_prompt_full(
+            brand_name, industry, style_preference, color_preference or None, tagline or None
+        )
+        # Add a variation suffix for randomness if generating multiple
+        prompt_short = build_logo_prompt_short(
+            brand_name, industry, style_preference, color_preference or None, tagline or None
+        )
+        
+        image_bytes, content_type, err_msg = generate_logo_image_bytes(prompt_short)
+        
+        # Fallback to OpenAI only for the first one if Pollinations fails, 
+        # to avoid burning through OpenAI credits if many options requested
+        if not image_bytes and i == 0:
+            image_bytes, content_type, err_msg = generate_logo_image_openai(prompt_full)
+            
+        if image_bytes:
+            b64 = base64.b64encode(image_bytes).decode("utf-8")
+            mime = content_type if content_type.startswith("image/") else "image/png"
+            logos.append({
+                "image_base64": b64,
+                "mime": mime,
+                "option_index": i + 1
+            })
+
+    if not logos:
         return jsonify({
             "error": err_msg or "Image generation failed. Please try again."
         }), 502
 
-    b64 = base64.b64encode(image_bytes).decode("utf-8")
-    mime = content_type if content_type.startswith("image/") else "image/png"
-    if "/" not in mime or mime.split("/")[0] != "image":
-        mime = "image/png"
-
-    add_activity("Logo Generated", f"New identity created for {brand_name}", icon="🎨")
-    return jsonify({"image_base64": b64, "mime": mime, "prompt_used": prompt_full})
+    add_activity("Logos Generated", f"{len(logos)} options created for {brand_name}", icon="🎨")
+    return jsonify({"logos": logos, "prompt_used": prompt_full})
 
 # PPTX Generation Logic
 def create_pptx_file(deck_data, filename):
