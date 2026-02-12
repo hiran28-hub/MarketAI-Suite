@@ -63,6 +63,34 @@
         }
     </style>
 
+    <!-- MarketAI Strategy Assistant (floating chat) - only for authenticated users -->
+    {% if session.get('user_id') %}
+    <div id="chat-assistant" class="chat-assistant">
+        <button type="button" id="chat-fab" class="chat-fab" aria-label="Open MarketAI Assistant">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div id="chat-window" class="chat-window chat-window--closed">
+            <div class="chat-window-header">
+                <span class="chat-window-title">MarketAI Assistant</span>
+                <div class="chat-window-actions">
+                    <button type="button" id="chat-clear" class="chat-btn-icon" title="Clear chat">Clear</button>
+                    <button type="button" id="chat-close" class="chat-btn-icon" aria-label="Close chat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-area">
+                <textarea id="chat-input" class="chat-input" rows="2" placeholder="Ask about B2B sales, marketing, leads..." maxlength="4000"></textarea>
+                <button type="button" id="chat-send" class="chat-send-btn">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
+    {% endif %}
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const forms = document.querySelectorAll('form');

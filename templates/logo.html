@@ -3,72 +3,259 @@
 {% block title %}Logo Generator - MarketAI Suite{% endblock %}
 
 {% block header %}
-<h1>Logo & Brand Generator</h1>
-<p>Create professional brand identities in seconds.</p>
+<h1>AI Logo Generator</h1>
+<p>Create professional brand identities with AI. No redirects — your logo appears right here.</p>
 {% endblock %}
 
 {% block content %}
 <div class="content-grid">
     <section class="input-section">
-        <form method="POST" action="/logo">
+        <form id="logo-form">
             <div class="form-group">
-                <label for="name">Business Name</label>
-                <input type="text" id="name" name="name" required placeholder="e.g., Bloom & Co.">
+                <label for="brand_name">Brand Name</label>
+                <input type="text" id="brand_name" name="brand_name" required placeholder="e.g., Bloom & Co.">
             </div>
-
             <div class="form-group">
-                <label for="style">Logo Style</label>
-                <select id="style" name="style">
-                    <option value="Minimalist">Minimalist & Clean</option>
-                    <option value="Modern Luxury">Modern Luxury</option>
-                    <option value="Vintage/Classic">Vintage & Classic</option>
-                    <option value="Tech/Futuristic">Tech & Futuristic</option>
-                    <option value="Playful/Organic">Playful & Organic</option>
+                <label for="industry">Industry</label>
+                <input type="text" id="industry" name="industry" required placeholder="e.g., Fashion, SaaS, Healthcare">
+            </div>
+            <div class="form-group">
+                <label for="style_preference">Style Preference</label>
+                <select id="style_preference" name="style_preference" required>
+                    <option value="Minimal">Minimal</option>
+                    <option value="Modern">Modern</option>
+                    <option value="Bold">Bold</option>
+                    <option value="Luxury">Luxury</option>
+                    <option value="Tech">Tech</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label for="color">Primary Color Mood</label>
-                <input type="text" id="color" name="color" placeholder="e.g., Dusty Rose and Sage Green">
+                <label for="color_preference">Color Preference (optional)</label>
+                <input type="text" id="color_preference" name="color_preference" placeholder="e.g., Dusty Rose and Sage Green">
             </div>
-
-            <button type="submit" class="btn-primary">Generate Brand Assets</button>
+            <div class="form-group">
+                <label for="tagline">Tagline (optional)</label>
+                <input type="text" id="tagline" name="tagline" placeholder="e.g., Grow with us">
+            </div>
+            <button type="submit" class="btn-primary" id="btn-generate">Generate Logo</button>
         </form>
     </section>
 
     <section class="output-section">
-        {% if image_filename %}
-        <h2>Generated Identity</h2>
-        <div class="logo-display"
-            style="text-align: center; background: white; padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 20px; position: relative; min-height: 200px;">
-            <div id="loader" style="position: absolute; top:50%; left:50%; transform: translate(-50%, -50%);">
-                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
-                <p style="margin-top: 10px; font-size: 0.9rem;">Perfecting your brand...</p>
+        <h2>Generated Logo</h2>
+        <div id="logo-result-container" class="logo-display" style="display: none;">
+            <div id="logo-loading" class="logo-loading" style="display: none;">
+                <div class="logo-spinner"></div>
+                <p>Generating your logo...</p>
             </div>
-            <img src="{{ url_for('static', filename='generated/' + image_filename) }}" alt="Generated Logo"
-                style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow-md); opacity: 0; transition: opacity 0.5s ease;"
-                onload="this.style.opacity='1'; document.getElementById('loader').style.display='none';">
-
-            <div id="controls" style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
-                <a href="{{ url_for('download_file', filename=image_filename) }}" class="btn-primary"
-                    style="width: auto; padding: 12px 24px;">Download JPEG</a>
-                <button class="btn-secondary"
-                    style="background: var(--background-color); color: var(--text-primary); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">Save
-                    to Media Library</button>
+            <div id="logo-image-wrap" style="display: none; text-align: center; background: white; padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 20px;">
+                <img id="logo-image" src="" alt="Generated Logo" class="logo-output-img">
+                <div id="logo-actions" class="logo-actions">
+                    <button type="button" id="btn-download-png" class="btn-primary" style="width: auto; padding: 12px 24px;">
+                        <i class="fas fa-download"></i> Download as PNG
+                    </button>
+                    <button type="button" id="btn-regenerate" class="btn-secondary logo-btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Regenerate
+                    </button>
+                </div>
             </div>
+            <div id="logo-error" class="logo-error" style="display: none;"></div>
         </div>
-        <div class="output-content" style="margin-top: 30px;">
-            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
-                <strong>Prompt Used:</strong> Professional minimalist logo for your business, designed in the selected
-                style and color palette. This asset is ready for social media and website use.
-            </p>
+        <div id="logo-placeholder" class="logo-placeholder">
+            <i class="fas fa-magic"></i>
+            <p>Enter your brand details and click <strong>Generate Logo</strong> to create your logo here.</p>
         </div>
-        {% else %}
-        <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
-            <i class="fas fa-magic" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
-            <p>Enter your business details to generate your unique brand assets.</p>
-        </div>
-        {% endif %}
     </section>
 </div>
+
+<style>
+    .logo-display { position: relative; min-height: 200px; }
+    .logo-loading {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    .logo-loading p { margin: 16px 0 0; color: var(--text-secondary); font-size: 0.95rem; }
+    .logo-spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto;
+        border: 4px solid var(--border-color);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: logo-spin 0.9s linear infinite;
+    }
+    @keyframes logo-spin { to { transform: rotate(360deg); } }
+    .logo-output-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: var(--shadow-md);
+    }
+    .logo-actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .logo-btn-secondary {
+        background: var(--background-color);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .logo-btn-secondary:hover { background: var(--border-color); }
+    .logo-placeholder {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+    .logo-placeholder i { font-size: 3rem; margin-bottom: 20px; opacity: 0.4; }
+    .logo-placeholder p { margin: 0; font-size: 1rem; }
+    .logo-error {
+        margin-top: 16px;
+        padding: 12px;
+        background: #fef2f2;
+        color: #b91c1c;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<script>
+(function () {
+    var form = document.getElementById('logo-form');
+    var resultContainer = document.getElementById('logo-result-container');
+    var placeholder = document.getElementById('logo-placeholder');
+    var loadingEl = document.getElementById('logo-loading');
+    var imageWrapEl = document.getElementById('logo-image-wrap');
+    var img = document.getElementById('logo-image');
+    var errorEl = document.getElementById('logo-error');
+    var btnGenerate = document.getElementById('btn-generate');
+    var btnDownload = document.getElementById('btn-download-png');
+    var btnRegenerate = document.getElementById('btn-regenerate');
+
+    function hideGlobalLoader() {
+        var el = document.getElementById('loading-overlay');
+        if (el) el.style.display = 'none';
+    }
+
+    function showLoading() {
+        placeholder.style.display = 'none';
+        resultContainer.style.display = 'block';
+        loadingEl.style.display = 'block';
+        if (imageWrapEl) imageWrapEl.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'none';
+        btnGenerate.disabled = true;
+    }
+
+    function showImage(dataUrl) {
+        hideGlobalLoader();
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'none';
+        imageWrapEl.style.display = 'block';
+        img.src = dataUrl;
+        img.dataset.dataUrl = dataUrl;
+        placeholder.style.display = 'none';
+        resultContainer.style.display = 'block';
+        btnGenerate.disabled = false;
+    }
+
+    function showError(msg) {
+        hideGlobalLoader();
+        loadingEl.style.display = 'none';
+        imageWrapEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.textContent = msg || 'Something went wrong. Please try again.';
+        resultContainer.style.display = 'block';
+        placeholder.style.display = 'none';
+        btnGenerate.disabled = false;
+    }
+
+    function getFormData() {
+        return {
+            brand_name: (document.getElementById('brand_name').value || '').trim(),
+            industry: (document.getElementById('industry').value || '').trim(),
+            style_preference: (document.getElementById('style_preference').value || '').trim(),
+            color_preference: (document.getElementById('color_preference').value || '').trim(),
+            tagline: (document.getElementById('tagline').value || '').trim()
+        };
+    }
+
+    function generateLogo() {
+        var data = getFormData();
+        if (!data.brand_name || !data.industry || !data.style_preference) {
+            showError('Please fill in Brand Name, Industry, and Style.');
+            return;
+        }
+        showLoading();
+        fetch('/generate-logo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(data)
+        })
+            .then(function (res) {
+                return res.json().then(function (body) {
+                    if (res.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    if (!res.ok) {
+                        throw new Error(body.error || 'Generation failed');
+                    }
+                    return body;
+                });
+            })
+            .then(function (body) {
+                if (!body || !body.image_base64) {
+                    showError('No image in response.');
+                    return;
+                }
+                var mime = body.mime || 'image/png';
+                var dataUrl = 'data:' + mime + ';base64,' + body.image_base64;
+                showImage(dataUrl);
+            })
+            .catch(function (err) {
+                showError(err.message);
+            });
+    }
+
+    function downloadPng() {
+        var dataUrl = img.dataset.dataUrl || img.src;
+        if (!dataUrl || dataUrl.indexOf('data:') !== 0) return;
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var im = new Image();
+        im.crossOrigin = 'anonymous';
+        im.onload = function () {
+            canvas.width = im.width;
+            canvas.height = im.height;
+            ctx.drawImage(im, 0, 0);
+            var pngData = canvas.toDataURL('image/png');
+            var a = document.createElement('a');
+            a.href = pngData;
+            a.download = 'marketai-logo-' + Date.now() + '.png';
+            a.click();
+        };
+        im.onerror = function () {
+            var a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = 'marketai-logo-' + Date.now() + '.png';
+            a.click();
+        };
+        im.src = dataUrl;
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        generateLogo();
+    });
+    if (btnRegenerate) btnRegenerate.addEventListener('click', generateLogo);
+    if (btnDownload) btnDownload.addEventListener('click', downloadPng);
+})();
+</script>
 {% endblock %}

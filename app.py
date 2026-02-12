@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import base64
 import requests
 import random
 import urllib.parse
@@ -8,12 +9,11 @@ import json
 import sqlite3
 from datetime import datetime
 from functools import wraps
-from flask import Flask, render_template, request, session, redirect, url_for, flash, Response, send_from_directory
+from flask import Flask, render_template, request, session, redirect, url_for, flash, Response, send_from_directory, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 from openai import OpenAI
 from pptx import Presentation
-from pptx.util import Inches, Pt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +43,16 @@ def init_db():
             title TEXT NOT NULL,
             description TEXT NOT NULL,
             icon TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            role TEXT NOT NULL,
+            message TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
@@ -135,6 +145,145 @@ def save_image_as_jpeg(image_url):
     except Exception as e:
         print(f"Save JPEG Error: {e}")
         return None
+
+
+# ----- AI Logo Generator (dynamic prompt, base64 response) -----
+# Short prompt for image API (URL length limit ~2000 chars when encoded)
+CREATIVE_VARIATIONS = [
+    "unique spin", "distinctive take", "creative variation", "alternative composition", "fresh interpretation",
+]
+
+
+def build_logo_prompt_full(brand_name, industry, style_preference, color_preference, tagline):
+    """Full prompt for logging/display only."""
+    color_part = f"Color theme: {color_preference}." if color_preference else "Professional color palette."
+    tagline_part = f"Include tagline: {tagline}." if tagline else ""
+    return (
+        f"Create a professional logo for a brand named '{brand_name}' in the {industry} industry. "
+        f"Design style: {style_preference}. {color_part} {tagline_part} "
+        f"Clean, vector-style, modern, scalable, white background."
+    ).strip()
+
+
+def build_logo_prompt_short(brand_name, industry, style_preference, color_preference, tagline):
+    """Short prompt for image API to stay under URL length limits (~250 chars)."""
+    variation = random.choice(CREATIVE_VARIATIONS)
+    color = (color_preference or "professional colors").strip()[:50]
+    parts = [
+        f"Professional logo for {brand_name}",
+        f"{industry} industry",
+        f"{style_preference} style",
+        color,
+        "white background",
+        "vector minimal clean",
+        variation,
+    ]
+    return ", ".join(parts)[:400]
+
+
+def generate_logo_image_bytes(prompt_text):
+    """
+    Call Pollinations/Flux with prompt; return (image_bytes, content_type, error_message).
+    Uses short prompt to avoid URL length limits. Tries image.pollinations.ai then gen.pollinations.ai.
+    """
+    seed = random.randint(1, 999999999)
+    short_prompt = (prompt_text[:280] if len(prompt_text) > 280 else prompt_text).strip()
+    encoded = urllib.parse.quote(short_prompt, safe="")
+    params = f"width=1024&height=1024&nologo=true&seed={seed}&model=flux"
+    urls_to_try = [
+        f"https://image.pollinations.ai/prompt/{encoded}?{params}",
+        f"https://gen.pollinations.ai/image/{encoded}?{params}",
+    ]
+    if len(urls_to_try[0]) > 2000:
+        short_enc = urllib.parse.quote(short_prompt[:150], safe="")
+        urls_to_try = [
+            f"https://image.pollinations.ai/prompt/{short_enc}?{params}",
+            f"https://gen.pollinations.ai/image/{short_enc}?{params}",
+        ]
+    last_err = "Image service unavailable."
+    for url in urls_to_try:
+        try:
+            resp = requests.get(url, timeout=60)
+            if resp.status_code != 200:
+                last_err = f"Service returned HTTP {resp.status_code}. Try Regenerate."
+                continue
+            ct = resp.headers.get("Content-Type") or "image/png"
+            if "image/" not in ct:
+                last_err = "Response was not an image."
+                continue
+            return resp.content, ct, None
+        except requests.exceptions.Timeout:
+            return None, None, "Image generation timed out. Try again or click Regenerate."
+        except requests.exceptions.RequestException as e:
+            last_err = str(e)[:200]
+        except Exception as e:
+            last_err = str(e)[:200]
+    return None, None, last_err
+
+
+def generate_logo_image_openai(prompt_text):
+    """Fallback: generate logo via OpenAI DALL-E if OPENAI_API_KEY is set. Returns (bytes, mime, error)."""
+    if not os.environ.get("OPENAI_API_KEY"):
+        return None, None, "OpenAI API key not set"
+    try:
+        resp = client.images.generate(model="dall-e-3", prompt=prompt_text[:4000], size="1024x1024", quality="standard", n=1)
+        img_url = resp.data[0].url
+        r = requests.get(img_url, timeout=30)
+        if r.status_code != 200:
+            return None, None, f"Failed to download image: {r.status_code}"
+        return r.content, "image/png", None
+    except Exception as e:
+        return None, None, str(e)[:200]
+
+
+@app.route("/generate-logo", methods=["POST"])
+def generate_logo():
+    """
+    AI Logo Generator API: validate session, build prompt, generate image, return base64.
+    Expects JSON: brand_name, industry, style_preference, color_preference (optional), tagline (optional).
+    """
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or request.form
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    brand_name = (data.get("brand_name") or data.get("name") or "").strip()
+    industry = (data.get("industry") or "").strip()
+    style_preference = (data.get("style_preference") or data.get("style") or "").strip()
+    color_preference = (data.get("color_preference") or data.get("color") or "").strip()
+    tagline = (data.get("tagline") or "").strip()
+
+    if not brand_name:
+        return jsonify({"error": "Brand name is required"}), 400
+    if not industry:
+        return jsonify({"error": "Industry is required"}), 400
+    if not style_preference:
+        return jsonify({"error": "Style preference is required"}), 400
+
+    prompt_full = build_logo_prompt_full(
+        brand_name, industry, style_preference, color_preference or None, tagline or None
+    )
+    prompt_short = build_logo_prompt_short(
+        brand_name, industry, style_preference, color_preference or None, tagline or None
+    )
+    image_bytes, content_type, err_msg = generate_logo_image_bytes(prompt_short)
+    if not image_bytes and err_msg:
+        # Optional fallback to OpenAI DALL-E if key is set
+        image_bytes, content_type, err_msg = generate_logo_image_openai(prompt_full)
+    if not image_bytes:
+        return jsonify({
+            "error": err_msg or "Image generation failed. Please try again."
+        }), 502
+
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+    mime = content_type if content_type.startswith("image/") else "image/png"
+    if "/" not in mime or mime.split("/")[0] != "image":
+        mime = "image/png"
+
+    add_activity("Logo Generated", f"New identity created for {brand_name}", icon="🎨")
+    return jsonify({"image_base64": b64, "mime": mime, "prompt_used": prompt_full})
 
 # PPTX Generation Logic
 def create_pptx_file(deck_data, filename):
@@ -288,6 +437,115 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+
+# ----- MarketAI Strategy Assistant (Chat) -----
+CHAT_SYSTEM_INSTRUCTION = (
+    "You are MarketAI Strategy Assistant, an expert in B2B sales, marketing strategy, "
+    "lead conversion, pitch refinement, and campaign optimization. Provide structured, "
+    "professional, and actionable responses. Avoid casual tone. "
+    "Use plain text only: do not use markdown asterisks (** or *) for bold, italic, or bullets. "
+    "Use line breaks and spacing for structure instead."
+)
+CHAT_CONTEXT_LIMIT = 15
+
+
+def get_chat_history(user_id, limit=CHAT_CONTEXT_LIMIT):
+    """Fetch last N messages for context (role, message) ordered by created_at ASC."""
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    c.execute(
+        "SELECT role, message FROM chat_messages WHERE user_id = ? ORDER BY created_at ASC",
+        (user_id,)
+    )
+    rows = c.fetchall()
+    conn.close()
+    # Keep only last `limit` messages for token efficiency
+    return rows[-limit:] if len(rows) > limit else rows
+
+
+@app.route("/chat/history")
+def chat_history():
+    """Return chat history for the current user. Requires authentication."""
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    user_id = session['user_id']
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    c.execute(
+        "SELECT role, message, created_at FROM chat_messages WHERE user_id = ? ORDER BY created_at ASC",
+        (user_id,)
+    )
+    rows = c.fetchall()
+    conn.close()
+    messages = [{"role": r[0], "message": r[1], "created_at": r[2]} for r in rows]
+    return jsonify({"messages": messages})
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    """Process user message, call Gemini with context, save and return assistant reply."""
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    user_id = session['user_id']
+
+    data = request.get_json(silent=True) or {}
+    raw_message = (data.get("message") or "").strip()
+    if not raw_message:
+        return jsonify({"error": "Message cannot be empty"}), 400
+
+    # Sanitize: limit length to avoid abuse
+    message = raw_message[:4000] if len(raw_message) > 4000 else raw_message
+
+    history = get_chat_history(user_id)
+    conversation_lines = []
+    for role, msg in history:
+        label = "User" if role == "user" else "Assistant"
+        conversation_lines.append(f"{label}: {msg}")
+    conversation_block = "\n".join(conversation_lines) if conversation_lines else "(No previous messages)"
+
+    prompt = f"""System Instruction:
+{CHAT_SYSTEM_INSTRUCTION}
+
+Conversation History:
+{conversation_block}
+
+Current Question:
+{message}"""
+
+    reply_text = generate_response(prompt)
+    if reply_text.startswith("Error connecting"):
+        return jsonify({"error": reply_text}), 502
+
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO chat_messages (user_id, role, message) VALUES (?, ?, ?)",
+        (user_id, "user", message)
+    )
+    c.execute(
+        "INSERT INTO chat_messages (user_id, role, message) VALUES (?, ?, ?)",
+        (user_id, "assistant", reply_text)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"reply": reply_text})
+
+
+@app.route("/chat/clear", methods=["POST"])
+def chat_clear():
+    """Clear all chat messages for the current user."""
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    user_id = session['user_id']
+    conn = sqlite3.connect('marketai.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM chat_messages WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
 # Home Page
 @app.route("/")
 @login_required
@@ -409,8 +667,6 @@ def pitch():
         if "Error" not in output:
             add_activity("Sales Pitch Crafted", f"Pitch for {persona[:30]}...", icon="💼")
     return render_template("pitch.html", output=output)
-
-import re
 
 # Lead Scoring
 @app.route("/lead", methods=["GET", "POST"])
@@ -591,8 +847,6 @@ def email():
             add_activity("Cold Email Generated", f"Email for {role} in {industry}", icon="📧")
             
     return render_template("email.html", subject=subject, body=body)
-
-from flask import Response
 
 @app.route("/download_email")
 @login_required
